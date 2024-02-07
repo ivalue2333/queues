@@ -18,13 +18,13 @@ func PriorityQueueTest1(t *testing.T) {
 	}
 	pq := NewPriorityQueue[string](len(items))
 	for priority, value := range items {
-		pq.Push(NewItem(priority, value))
+		pq.Push(priority, value)
 	}
 	i := len(items)
 	for pq.Len() > 0 {
-		item := pq.Pop()
-		if i != item.priority {
-			t.Errorf("i:%d not match priority:%d", i, item.priority)
+		item := pq.PopItem()
+		if i != item.GetPriority() {
+			t.Errorf("i:%d not match priority:%d", i, item.GetPriority())
 		}
 		i -= 1
 	}
