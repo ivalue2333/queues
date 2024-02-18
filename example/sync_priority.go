@@ -7,29 +7,67 @@ import (
 	"github.com/ivalue2333/queues"
 )
 
-func main() {
-	items := map[int]string{
-		3: "banana",
-		2: "apple",
-		4: "pear",
-		1: "good",
-		6: "6",
-		5: "orange",
-		7: "7",
+// demoMaxHeapSync 大顶堆.
+func demoMaxHeapSync() {
+	fmt.Println("demoMaxHeapSync")
+	datas := []int{5, 4, 3, 2, 1, 6, 7, 8}
+	pq := queues.NewSyncPriorityQueue[int](len(datas), func(iv, jv int) bool {
+		return iv > jv
+	})
+	pq.Push(datas...)
+	for pq.Len() > 0 {
+		v := pq.Pop()
+		fmt.Println(fmt.Sprintf("v is :%d", v))
 	}
-	pq := queues.NewSyncPriorityQueue[string](len(items))
+}
+
+// demoMinHeapSync 小顶堆.
+func demoMinHeapSync() {
+	fmt.Println("demoMinHeapSync")
+	datas := []int{5, 4, 3, 2, 1, 6, 7, 8}
+	pq := queues.NewSyncPriorityQueue[int](len(datas), func(iv, jv int) bool {
+		return iv < jv
+	})
+	pq.Push(datas...)
+	for pq.Len() > 0 {
+		v := pq.Pop()
+		fmt.Println(fmt.Sprintf("v is :%d", v))
+	}
+}
+
+func demoSyncCurrent() {
+	fmt.Println("demoSyncCurrent")
+	size := 1000
+	items := make([]int, 0, size)
+	for i := 0; i < size; i++ {
+		items = append(items, i)
+	}
+	pq := queues.NewSyncPriorityQueue[int](0, func(iv, jv int) bool {
+		return iv > jv
+	})
 	wg := sync.WaitGroup{}
-	for priority, value := range items {
-		p1, v1 := priority, value
+	for _, v := range items {
+		val := v
 		wg.Add(1)
 		go func() {
-			pq.Push(p1, v1)
+			pq.Push(val)
 			wg.Done()
 		}()
 	}
 	wg.Wait()
+	i := pq.Len() - 1
 	for pq.Len() > 0 {
-		item := pq.PopItem()
-		fmt.Println(fmt.Sprintf("item priority:%d, val:%v", item.GetPriority(), item.GetValue()))
+		v := pq.Pop()
+		if v != i {
+			fmt.Println("not good", v, i)
+			return
+		}
+		i -= 1
 	}
+}
+
+func main() {
+	demoMaxHeapSync()
+	demoMinHeapSync()
+	demoSyncCurrent()
 }

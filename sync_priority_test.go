@@ -18,15 +18,18 @@ func SyncPriorityQueueTest1(t *testing.T) {
 		1: "good",
 		5: "orange",
 	}
-	pq := NewPriorityQueue[string](len(items))
+	pq := NewSyncPriorityQueue[*testInfo](len(items), func(iv, jv *testInfo) bool {
+		return iv.Priority > jv.Priority
+	})
 	for priority, value := range items {
-		pq.Push(priority, value)
+		pq.Push(newTestInfo(priority, value))
 	}
 	i := len(items)
 	for pq.Len() > 0 {
-		item := pq.PopItem()
-		if i != item.priority {
-			t.Errorf("i:%d not match priority:%d", i, item.priority)
+		v := pq.Pop().Value
+		expectV := items[i]
+		if expectV != v {
+			t.Errorf("v not match")
 		}
 		i -= 1
 	}
@@ -42,22 +45,25 @@ func SyncPriorityQueueTestCurrent(t *testing.T) {
 		5: "orange",
 		7: "7",
 	}
-	pq := NewSyncPriorityQueue[string](len(items))
+	pq := NewSyncPriorityQueue[*testInfo](len(items), func(iv, jv *testInfo) bool {
+		return iv.Priority > jv.Priority
+	})
 	wg := sync.WaitGroup{}
 	for priority, value := range items {
 		p1, v1 := priority, value
 		wg.Add(1)
 		go func() {
-			pq.Push(p1, v1)
+			pq.Push(newTestInfo(p1, v1))
 			wg.Done()
 		}()
 	}
 	wg.Wait()
 	i := len(items)
 	for pq.Len() > 0 {
-		item := pq.PopItem()
-		if i != item.priority {
-			t.Errorf("i:%d not match priority:%d", i, item.priority)
+		v := pq.Pop().Value
+		expectV := items[i]
+		if expectV != v {
+			t.Errorf("v not match")
 		}
 		i -= 1
 	}

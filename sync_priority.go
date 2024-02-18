@@ -2,9 +2,9 @@ package queues
 
 import "sync"
 
-func NewSyncPriorityQueue[T any](cap int) *SyncPriorityQueue[T] {
+func NewSyncPriorityQueue[T any](cap int, lessFunc func(iv, jv T) bool) *SyncPriorityQueue[T] {
 	return &SyncPriorityQueue[T]{
-		q: NewPriorityQueue[T](cap),
+		q: NewPriorityQueue[T](cap, lessFunc),
 	}
 }
 
@@ -13,24 +13,16 @@ type SyncPriorityQueue[T any] struct {
 	q     *PriorityQueue[T]
 }
 
-func (pq *SyncPriorityQueue[T]) Push(p int, v T) {
-	pq.PushItem(NewItem(p, v))
-}
-
-func (pq *SyncPriorityQueue[T]) PushItem(item *Item[T]) {
+func (pq *SyncPriorityQueue[T]) Push(v ...T) {
 	pq.mutex.Lock()
 	defer pq.mutex.Unlock()
-	pq.q.PushItem(item)
+	pq.q.Push(v...)
 }
 
 func (pq *SyncPriorityQueue[T]) Pop() T {
-	return pq.PopItem().value
-}
-
-func (pq *SyncPriorityQueue[T]) PopItem() *Item[T] {
 	pq.mutex.Lock()
 	defer pq.mutex.Unlock()
-	return pq.q.PopItem()
+	return pq.q.Pop()
 }
 
 func (pq *SyncPriorityQueue[T]) Len() int {

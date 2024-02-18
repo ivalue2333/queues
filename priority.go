@@ -1,42 +1,36 @@
 package queues
 
 type Item[T any] struct {
-	value    T
-	priority int
-	index    int
+	value T
+	index int
 }
 
-func (i *Item[T]) GetValue() T {
-	return i.value
-}
-
-func (i *Item[T]) GetPriority() int {
-	return i.priority
-}
-
-func NewItem[T any](p int, v T) *Item[T] {
+func newItem[T any](v T) *Item[T] {
 	return &Item[T]{
-		value:    v,
-		priority: p,
+		value: v,
 	}
 }
 
-func NewPriorityQueue[T any](cap int) *PriorityQueue[T] {
+func NewPriorityQueue[T any](cap int, lessFunc func(iv, jv T) bool) *PriorityQueue[T] {
 	return &PriorityQueue[T]{
-		datas: make([]*Item[T], 0, cap),
+		datas:    make([]*Item[T], 0, cap),
+		lessFunc: lessFunc,
 	}
 }
 
 type PriorityQueue[T any] struct {
-	datas []*Item[T]
+	datas    []*Item[T]
+	lessFunc func(iv, jv T) bool
 }
 
-func (pq *PriorityQueue[T]) Push(p int, v T) {
-	item := NewItem(p, v)
-	pq.PushItem(item)
+func (pq *PriorityQueue[T]) Push(vv ...T) {
+	for _, v := range vv {
+		pq.push(v)
+	}
 }
 
-func (pq *PriorityQueue[T]) PushItem(item *Item[T]) {
+func (pq *PriorityQueue[T]) push(v T) {
+	item := newItem(v)
 	n := len(pq.datas)
 	item.index = n
 	pq.datas = append(pq.datas, item)
@@ -45,17 +39,12 @@ func (pq *PriorityQueue[T]) PushItem(item *Item[T]) {
 }
 
 func (pq *PriorityQueue[T]) Pop() T {
-	item := pq.PopItem()
-	return item.value
-}
-
-func (pq *PriorityQueue[T]) PopItem() *Item[T] {
 	n := pq.Len() - 1
 	pq.swap(0, n)
 	// 排序
 	pq.down(0, n)
 	// 返回
-	return pq.doPop()
+	return pq.doPop().value
 }
 
 func (pq *PriorityQueue[T]) doPop() *Item[T] {
@@ -73,7 +62,7 @@ func (pq *PriorityQueue[T]) Len() int {
 }
 
 func (pq *PriorityQueue[T]) less(i, j int) bool {
-	return pq.datas[i].priority > pq.datas[j].priority
+	return pq.lessFunc(pq.datas[i].value, pq.datas[j].value)
 }
 
 func (pq *PriorityQueue[T]) swap(i, j int) {
