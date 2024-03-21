@@ -26,9 +26,9 @@ func SyncPriorityQueueTest1(t *testing.T) {
 	}
 	i := len(items)
 	for pq.Len() > 0 {
-		v := pq.Pop().Value
+		v, _ := pq.Pop()
 		expectV := items[i]
-		if expectV != v {
+		if expectV != v.Value {
 			t.Errorf("v not match")
 		}
 		i -= 1
@@ -60,9 +60,9 @@ func SyncPriorityQueueTestCurrent(t *testing.T) {
 	wg.Wait()
 	i := len(items)
 	for pq.Len() > 0 {
-		v := pq.Pop().Value
+		v, _ := pq.Pop()
 		expectV := items[i]
-		if expectV != v {
+		if expectV != v.Value {
 			t.Errorf("v not match")
 		}
 		i -= 1

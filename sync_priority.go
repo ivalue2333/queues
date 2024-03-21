@@ -19,10 +19,13 @@ func (pq *SyncPriorityQueue[T]) Push(v ...T) {
 	pq.q.Push(v...)
 }
 
-func (pq *SyncPriorityQueue[T]) Pop() T {
+func (pq *SyncPriorityQueue[T]) Pop() (zero T, ok bool) {
 	pq.mutex.Lock()
 	defer pq.mutex.Unlock()
-	return pq.q.Pop()
+	if pq.q.Len() == 0 {
+		return
+	}
+	return pq.q.Pop(), true
 }
 
 func (pq *SyncPriorityQueue[T]) Len() int {
